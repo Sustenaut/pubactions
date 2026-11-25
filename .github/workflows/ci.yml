@@ -1,0 +1,130 @@
+# pubactions' own CI, written by hand. It calls none of pubrules' reusable
+# workflows: pubrules pins these actions, so a call back into pubrules would
+# make the two repositories' pins a cycle. It runs the actions from this
+# checkout by local path, so a change to one is tried before a release
+# carries it to anyone. Third-party actions are pinned by commit.
+name: ci
+
+on:
+  push: { branches: [main] }
+  pull_request:
+  # The merge queue's run of a pull request merged into main: the required
+  # checks must report on it too, or nothing leaves the queue.
+  merge_group:
+
+permissions:
+  contents: read
+
+jobs:
+  # shellcheck on every action's scripts (the runner image's shellcheck).
+  checks:
+    name: ci / checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - name: shell scripts pass shellcheck
+        run: make shellcheck
+
+  # The managed files in step with the pinned pubrules (which the locked
+  # environment installs), and the Gherkin suite: each action's steps run
+  # as GitHub runs them, with stand-ins for what they call.
+  functional:
+    name: ci / functional
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with: { python-version: '3.14' }
+      - name: Set up, tried three times (a release download can time out)
+        uses: ./actions/retry
+        with: { run: make venv }
+      - name: managed files in step with the pinned pubrules
+        run: .venv/bin/pubrules sync --check
+      - run: make functional
+
+  # Each action, run by GitHub from this checkout.
+  smoke:
+    name: ci / smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      # pr-label reads a pushed commit's pull requests.
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: retry, with a script that fails the first time
+        uses: ./actions/retry
+        with:
+          what: smoke
+          tries: '2'
+          pause: '1'
+          run: |
+            echo run >> "$RUNNER_TEMP/retry-runs"
+            [ "$(wc -l < "$RUNNER_TEMP/retry-runs")" -gt 1 ]
+      - name: retry ran the script twice
+        run: test "$(wc -l < "$RUNNER_TEMP/retry-runs")" = 2
+
+      - name: apt-install, of a package the runner image lacks
+        uses: ./actions/apt-install
+        with: { packages: sl }
+      - name: apt-install installed it
+        run: dpkg -s sl > /dev/null
+
+      # A stand-in terraform that passes only when given a CLI configuration,
+      # as the mirror try gives it: no provider is fetched.
+      - name: A terraform that needs the provider mirror
+        run: |
+          mkdir -p "$RUNNER_TEMP/tf"
+          printf '#!/bin/sh\necho "$*" >> "$RUNNER_TEMP/tf/inits"\n[ -n "${TF_CLI_CONFIG_FILE:-}" ] && cp "$TF_CLI_CONFIG_FILE" "$RUNNER_TEMP/tf/config"\n' \
+            > "$RUNNER_TEMP/tf/terraform"
+          chmod +x "$RUNNER_TEMP/tf/terraform"
+          echo "TF=$RUNNER_TEMP/tf/terraform" >> "$GITHUB_ENV"
+      - name: terraform-init, tried twice, then from the mirror
+        uses: ./actions/terraform-init
+        with:
+          terraform: ${{ env.TF }}
+          tries: '2'
+          pause: '0'
+          mirror: https://mirror.example/terraform
+      - name: terraform-init tried three times, the last from the mirror
+        run: |
+          test "$(wc -l < "$RUNNER_TEMP/tf/inits")" = 3
+          grep -qF 'url = "https://mirror.example/terraform/"' "$RUNNER_TEMP/tf/config"
+
+      - id: label
+        name: pr-label
+        uses: ./actions/pr-label
+      - name: pr-label said true or false
+        run: test "$PRESENT" = true || test "$PRESENT" = false
+        env: { PRESENT: '${{ steps.label.outputs.present }}' }
+
+  # The one check main's ruleset requires.
+  passed:
+    name: ci / passed
+    if: always()
+    needs: [checks, functional, smoke]
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "$RESULTS"
+          echo "$RESULTS" | jq -e 'all(.[]; .result == "success")' > /dev/null
+        env: { RESULTS: '${{ toJSON(needs) }}' }
+
+  # pubrel's release workflow: on a pull request, a change to actions/
+  # records what it changes and a release is the bump its changes require;
+  # on main, a published version is tagged and released. The release app's
+  # token tags the release: the tag ruleset lets only it through. The
+  # release workflow installs pubrel from crates.io, so it pins the newest
+  # pubrel there (0.8.x is tagged but not yet published), as the nightly does.
+  release:
+    needs: passed
+    if: ${{ !cancelled() && needs.passed.result == 'success' }}
+    uses: Sustenaut/pubrel/.github/workflows/release.yml@d0295449195990fc2813ba91945b265a8c0cf040 # v0.7.1
+    with: { pubrel-version: v0.7.1 }
+    secrets: { RELEASE_APP_ID: '${{ secrets.RELEASE_APP_ID }}', RELEASE_APP_KEY: '${{ secrets.RELEASE_APP_KEY }}' }
+    permissions:
+      contents: write

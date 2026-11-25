@@ -1,0 +1,10 @@
+# Local secrets, such as the Bitwarden token ./with-secrets reads: never committed.
+.env
+# The local environment, a directory or a link (pubrel prepare links it into its worktree).
+.venv
+__pycache__/
+.pytest_cache/
+.hypothesis/
+/coverage/
+# A corpus's working store and secret key; objects/ is its durable form.
+/corpus/.publet/

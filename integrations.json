@@ -1,0 +1,28 @@
+{
+  "uses": [
+    {
+      "plugin": "github.app-token",
+      "paths": [
+        ".github/workflows/ci.yml"
+      ],
+      "mode": "required"
+    },
+    {
+      "plugin": "github.repo-ops",
+      "paths": [
+        "actions/pr-label/"
+      ],
+      "mode": "required"
+    }
+  ],
+  "exclude": [
+    {
+      "path": "tests/**",
+      "reason": "Stand-ins for GitHub's API and the tools the actions call, never the services themselves"
+    },
+    {
+      "path": "corpus/**",
+      "reason": "Release records, not code"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+{
+  "category": "added",
+  "change": "pubactions: the composite actions retry, apt-install, terraform-init and pr-label, moved from pubrules 0.49.0 with their scenarios. terraform-init takes its provider mirror from a new optional input, mirror (empty by default: no mirror try), instead of reading mirror.terraform from pubrules.json"
+}
