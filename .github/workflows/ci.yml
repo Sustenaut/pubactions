@@ -117,12 +117,14 @@ jobs:
   # pubrel's release workflow: on a pull request, a change to actions/
   # records what it changes and a release is the bump its changes require;
   # on main, a published version is tagged and released. The release app's
-  # token tags the release: the tag ruleset lets only it through.
+  # token tags the release: the tag ruleset lets only it through. The
+  # release workflow installs pubrel from crates.io, so it pins the newest
+  # pubrel there (0.8.x is tagged but not yet published), as the nightly does.
   release:
     needs: passed
     if: ${{ !cancelled() && needs.passed.result == 'success' }}
-    uses: Sustenaut/pubrel/.github/workflows/release.yml@688a476cdeb19fb2e7a95c7460dd6c659c202c6b # v0.8.2
-    with: { pubrel-version: v0.8.2 }
+    uses: Sustenaut/pubrel/.github/workflows/release.yml@d0295449195990fc2813ba91945b265a8c0cf040 # v0.7.1
+    with: { pubrel-version: v0.7.1 }
     secrets: { RELEASE_APP_ID: '${{ secrets.RELEASE_APP_ID }}', RELEASE_APP_KEY: '${{ secrets.RELEASE_APP_KEY }}' }
     permissions:
       contents: write
