@@ -1,0 +1,18 @@
+[project]
+name = "pubactions"
+version = "0.1.0"
+description = "Composite GitHub Actions shared across Sustenaut's repositories: retry, apt-install, terraform-init and pr-label."
+license = "Apache-2.0"
+requires-python = ">=3.12"
+
+# The suite starts the actions' scripts as programs, on every core
+# (pytest-xdist): coverage follows both and combines them, as pubrules
+# asks of every Python suite. The actions are shell, which coverage does not
+# measure: the programs it follows hold no Python, so it says nothing of them.
+[tool.coverage.run]
+patch = ["subprocess"]
+parallel = true
+disable_warnings = ["no-data-collected"]
+
+[tool.coverage.xml]
+output = "coverage/coverage.xml"

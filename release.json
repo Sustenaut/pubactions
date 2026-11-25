@@ -1,0 +1,16 @@
+{
+  "name": "pubactions",
+  "package": "pkg.pubactions",
+  "tag": "PKG-PUBACT-11-2026",
+  "corpus": "corpus",
+  "manifest": {
+    "kind": "pyproject",
+    "path": "pyproject.toml"
+  },
+  "code": [
+    "actions/",
+    "pyproject.toml"
+  ],
+  "install": "uses: Sustenaut/pubactions/actions/<name>@<the commit {tag} names> # {tag}",
+  "key": "pub:sha2-256:kczd4rax7izehhdjx24fuqlrmmzobo57zks5zqq32kc2mlyovdyq"
+}

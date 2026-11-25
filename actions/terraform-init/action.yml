@@ -1,0 +1,49 @@
+# terraform init, tried again when it fails, then once from a provider
+# mirror, when the caller names one: a provider download can time out. The
+# lock's hashes still check every archive the mirror gives. Run it after
+# hashicorp/setup-terraform.
+#
+#   - name: terraform init, tried three times, then from the provider mirror
+#     uses: Sustenaut/pubactions/actions/terraform-init@<commit> # vX.Y.Z
+#     with:
+#       dir: infra
+#       args: -backend=false -input=false
+#       mirror: ${{ steps.config.outputs.mirror }}  # empty: no mirror try
+#
+# The mirror is a Terraform network mirror's base URL, such as the
+# mirror.terraform of a pubrules.json; empty, the default, tries none.
+name: terraform-init
+description: terraform init, tried up to a number of times, then once from a provider mirror, if one is given.
+
+inputs:
+  terraform:
+    description: The terraform binary.
+    default: terraform
+  dir:
+    description: The directory to initialise, given to terraform as -chdir.
+    default: .
+  args:
+    description: init's arguments, split on spaces.
+    default: -input=false
+  tries:
+    description: How many times to try init before the mirror, a whole number above 0.
+    default: '3'
+  pause:
+    description: Seconds to wait after a failed try before the next.
+    default: '15'
+  mirror:
+    description: A Terraform provider network mirror's base URL, tried once after the last failed try; empty tries none.
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        TF: ${{ inputs.terraform }}
+        DIR: ${{ inputs.dir }}
+        ARGS: ${{ inputs.args }}
+        TRIES: ${{ inputs.tries }}
+        PAUSE: ${{ inputs.pause }}
+        MIRROR: ${{ inputs.mirror }}
+      run: '"$GITHUB_ACTION_PATH/init.sh"'
