@@ -1,0 +1,121 @@
+{
+  "claims": {
+    "identity": {
+      "class": "archival",
+      "content": "pubactions 0.1.0 is released as v0.1.0 from commit bdda39aa1dbb4326fffb2fde561ea5a6663d4524.",
+      "data": {
+        "columns": [
+          {
+            "name": "name"
+          },
+          {
+            "name": "version"
+          },
+          {
+            "name": "check"
+          },
+          {
+            "name": "expect"
+          },
+          {
+            "name": "tag"
+          },
+          {
+            "name": "commit"
+          }
+        ],
+        "rows": [
+          [
+            "pubactions",
+            "0.1.0",
+            "",
+            "",
+            "v0.1.0",
+            "bdda39aa1dbb4326fffb2fde561ea5a6663d4524"
+          ]
+        ]
+      },
+      "scope": "the published release v0.1.0 of pubactions",
+      "sources": [
+        {
+          "ref": "pubactions",
+          "revision": "bdda39aa1dbb4326fffb2fde561ea5a6663d4524"
+        }
+      ]
+    },
+    "release": {
+      "class": "archival",
+      "content": "pubactions 0.1.0 was released on 2026-11-25 from commit bdda39aa1dbb4326fffb2fde561ea5a6663d4524 with these changes.",
+      "data": {
+        "columns": [
+          {
+            "name": "category"
+          },
+          {
+            "name": "change"
+          }
+        ],
+        "rows": [
+          [
+            "added",
+            "pubactions: the composite actions retry, apt-install, terraform-init and pr-label, moved from pubrules 0.49.0 with their scenarios. terraform-init takes its provider mirror from a new optional input, mirror (empty by default: no mirror try), instead of reading mirror.terraform from pubrules.json"
+          ]
+        ]
+      },
+      "depends": [
+        "#identity"
+      ],
+      "scope": "the published release v0.1.0 of pubactions",
+      "sources": [
+        {
+          "ref": "pubactions",
+          "revision": "bdda39aa1dbb4326fffb2fde561ea5a6663d4524"
+        }
+      ]
+    },
+    "summary": {
+      "class": "archival",
+      "content": "pubactions 0.1.0 in brief: pubactions' first release: four of pubrules' composite actions, moved out so a workflow can pin them apart from pubrules' releases. pubrules' cache action stays in pubrules.",
+      "depends": [
+        "#release"
+      ],
+      "scope": "the published release v0.1.0 of pubactions",
+      "sources": [
+        {
+          "ref": "pubactions",
+          "revision": "bdda39aa1dbb4326fffb2fde561ea5a6663d4524"
+        }
+      ]
+    }
+  },
+  "created": "2026-11-25T00:00:00Z",
+  "sections": [
+    {
+      "heading": "Summary",
+      "items": [
+        {
+          "ref": "#summary"
+        }
+      ]
+    },
+    {
+      "heading": "Identity",
+      "items": [
+        {
+          "ref": "#identity"
+        }
+      ]
+    },
+    {
+      "heading": "Release",
+      "items": [
+        {
+          "ref": "#release"
+        }
+      ]
+    }
+  ],
+  "slug": "pkg.pubactions",
+  "tag": "PKG-PUBACT-11-2026",
+  "title": "pubactions"
+}
