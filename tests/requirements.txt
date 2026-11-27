@@ -1,7 +1,7 @@
 # The functional suite's direct dependencies. Exact pins only; the resolved
 # set with hashes lives in requirements.lock. Regenerate it with `pubrules lock`.
 # The steps and plugin the suite runs with; the nightly moves the pin.
-pubtestrules==0.4.0
+pubtestrules==0.4.1
 # The steps read each action's action.yml.
 PyYAML==6.0.3
 # Coverage, which make functional runs the suite under.
